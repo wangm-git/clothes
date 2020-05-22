@@ -86,7 +86,7 @@ class CartController extends Controller
             $picArr = explode(',', $value->pic);
             $value->pic = env('APP_URL').$picArr[0];
         }
-
+        echo $cart;
         return json_encode($cart);
     }
 }
