@@ -33,3 +33,5 @@ Route::post('/cart/add','CartController@add');
 Route::post('/cart/update','CartController@update');
 Route::post('/cart/delete/{id}','CartController@delete');
 Route::get('/cart/list','CartController@list');
+
+Route::get('/pay/pay','PayController@pay');
