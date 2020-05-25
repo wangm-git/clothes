@@ -15,7 +15,7 @@ class OrderController extends Controller
                         ->orderBy('id', 'asc')
                         ->select('id', 'over')
                         ->skip($request->skip)
-                        ->take(1)
+                        ->take(8)
                         ->get();
 
         foreach ($orders as $key => $order) {

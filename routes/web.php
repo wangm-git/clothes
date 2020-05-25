@@ -34,4 +34,7 @@ Route::post('/cart/update','CartController@update');
 Route::post('/cart/delete/{id}','CartController@delete');
 Route::get('/cart/list','CartController@list');
 
-Route::get('/pay/pay','PayController@pay');
+Route::post('/pay/pay','PayController@pay');
+Route::post('/pay/placeOrder','PayController@placeOrder');
+Route::post('/pay/placeOrderFromCart','PayController@placeOrderFromCart');
+Route::get('/pay/show','PayController@show');

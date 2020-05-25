@@ -66,7 +66,13 @@ class AddressController extends Controller
 
     public function delete($id)
     {
-    	Address::destroy($id);
+    	$data = Address::destroy($id);
+
+        if ($data == 1){
+            return json_encode(['code' => '200', 'data' =>'删除成功']);
+        } else{
+            return json_encode(['code' => '400', 'data' =>'删除失败']);
+        }
     }
 
     public function setDefault(Request $request)
