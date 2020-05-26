@@ -76,15 +76,15 @@ class CartController extends Controller
         $cart = Cart::where('user_id', $request->user_id)
                     ->where('delete_at', 0)
                     ->join('clothes_shop', 'clothes_shop.id', '=', 'clothes_cart.shop_id')
-                    ->join('clothes_specifications', 'clothes_specifications.id', '=', 'clothes_cart.spe_id')
+                    ->join('clothes_Specifications', 'clothes_Specifications.id', '=', 'clothes_cart.spe_id')
                     ->join('clothes_member_spe', 'clothes_member_spe.id', '=', 'clothes_cart.member_spe_id')
-                    ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_specifications.colour', 'clothes_specifications.size', 'clothes_member_spe.pay', 'clothes_cart.num')
+                    ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_member_spe.pay', 'clothes_cart.num')
                     ->get();
 
         $picArr = [];
         foreach ($cart as $key => &$value) {
             $picArr = explode(',', $value->pic);
-            $value->pic = env('APP_URL').$picArr[0];
+            $value->pic = env('PIC_URL').$picArr[0];
         }
 
         return json_encode($cart);

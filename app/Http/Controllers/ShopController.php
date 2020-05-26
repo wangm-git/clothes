@@ -12,19 +12,25 @@ class ShopController extends Controller
 {
     public function show(Request $request)
     {
-        $shop = MemberShop::where('member', $request->member)
-                            ->where('shopid', $request->shopid)
+        $shop = MemberShop::where('clothes_member_shop.id', $request->id)
                             ->where('clothes_member_shop.over', 1)
                             ->join('clothes_shop', 'clothes_member_shop.shopid', '=', 'clothes_shop.id')
-                            ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_shop.con','clothes_member_shop.pay', 'clothes_member_shop.sale', 'clothes_member_shop.speid','clothes_member_shop.member', 'clothes_member_shop.id')
+                            ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_shop.con','clothes_shop.relation','clothes_member_shop.pay', 'clothes_member_shop.sale', 'clothes_member_shop.speid','clothes_member_shop.member', 'clothes_member_shop.id', 'clothes_member_shop.shopid')
                             ->first();
 
-        $picArr = explode(',', $shop->pic);
-        $speArr = explode(',', $shop->speid);
+        if (empty($shop)){
+            return ['data'=>'数据不存在'];
+        }
 
-        $spe = MemberSpe::whereIn('clothes_member_spe.id', $speArr)
-                            ->join('clothes_specifications', 'clothes_specifications.id', '=', 'clothes_member_spe.speid')
-                            ->select('clothes_specifications.colour', 'clothes_specifications.size', 'clothes_member_spe.pay', 'clothes_member_spe.id as member_spe_id', 'clothes_specifications.id as spe_id')
+        $picArr = explode(',', $shop->pic);
+        foreach ($picArr as $key => $value) {
+            $picArr[$key] = env('PIC_URL').$value;
+        }
+
+        $spe = MemberSpe::where('clothes_member_spe.shopid', $shop->id)
+                            ->where('clothes_member_spe.member', $shop->member)
+                            ->join('clothes_Specifications', 'clothes_Specifications.id', '=', 'clothes_member_spe.speid')
+                            ->select('clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_member_spe.pay', 'clothes_member_spe.id as member_spe_id', 'clothes_Specifications.id as spe_id')
                             // ->groupBy('clothes_specifications.colour')
                             ->get();
 
@@ -34,17 +40,43 @@ class ShopController extends Controller
             if(!in_array($value->colour, $colour)){
                 $colour[] = $value->colour;
             }
-            $speData[$value->colour][] = ['size'=>$value->size, 'pay'=>$value->pay, 'spe_id' => $value->spe_id, 'member_spe_id' => $value->member_spe_id];
+            $speData[$value->colour]['colour'] = $value->colour;
+            $speData[$value->colour]['data'][] = ['size'=>$value->size, 'pay'=>$value->pay, 'spe_id' => $value->spe_id, 'member_spe_id' => $value->member_spe_id];
         }
-
+        $speData = array_values($speData);
         $likeShop = MemberShop::where('clothes_shop.title', 'like', '%'.$shop->title.'%')
                             ->where('clothes_member_shop.member', $shop->member)
                             ->where('clothes_member_shop.id', '!=',$shop->id)
                             ->join('clothes_shop', 'clothes_member_shop.shopid', '=', 'clothes_shop.id')
-                            ->select('clothes_shop.title', 'clothes_shop.pic')
+                            ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_member_shop.id','clothes_member_shop.pay', 'clothes_member_shop.sale')
                             ->take(4)
                             ->get();
 
-        return json_encode(['title' => $shop->title, 'pic' => $picArr,'con' => $shop->con,'pay'=>$shop->pay,'sale'=>$shop->sale,'spe' => $speData, 'like' => $likeShop]);
+        $likePic = [];
+        foreach ($likeShop as $key => $like) {
+            $likePic = explode(',', $like->pic);
+            $like->pic = env('PIC_URL').$likePic[0];
+        }
+
+        if (!empty($shop->relation)) {
+            $relationIds = explode(',', $shop->relation);
+
+            $relationShop = MemberShop::whereIn('clothes_member_shop.shopid', $relationIds)
+                                ->where('clothes_member_shop.member', $shop->member)
+                                ->join('clothes_shop', 'clothes_member_shop.shopid', '=', 'clothes_shop.id')
+                                ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_member_shop.pay','clothes_member_shop.id', 'clothes_member_shop.sale')
+                                ->take(5)
+                                ->get();
+
+            $relationPic = [];
+            foreach ($relationShop as $key => $relation) {
+                $relationPic = explode(',', $relation->pic);
+                $relation->pic = env('PIC_URL').$relationPic[0];
+            }
+        }else{
+            $relationShop = [];
+        }
+
+        return json_encode(['title' => $shop->title, 'pic' => $picArr,'con' => $shop->con,'pay'=>$shop->pay,'sale'=>$shop->sale,'spe' => $speData, 'like' => $likeShop, 'relation'=>$relationShop]);
     }
 }

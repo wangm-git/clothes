@@ -18,6 +18,7 @@ Route::get('/', function () {
 Route::get('/test','TestController@index');
 
 Route::get('/member/getInfo','MemberController@getInfo');
+Route::get('/member/getTypeInfo','MemberController@getTypeInfo');
 
 Route::get('/address/list/{member_id}','AddressController@list');
 Route::post('/address/add','AddressController@add');

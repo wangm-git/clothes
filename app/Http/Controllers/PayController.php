@@ -142,8 +142,8 @@ class PayController extends Controller
 	    		$data = OrderInfo::where('clothes_orderinfo.id', $orderinfo->id)
 	    							->join('clothes_shop', 'clothes_shop.id', '=', 'clothes_orderinfo.shopid')
 	    							->join('clothes_member_spe', 'clothes_member_spe.id', '=', 'clothes_orderinfo.mspeid')
-	    							->join('clothes_specifications', 'clothes_specifications.id', '=', 'clothes_orderinfo.speid')
-	    							->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_member_spe.pay', 'clothes_specifications.colour', 'clothes_specifications.size', 'clothes_orderinfo.num')
+	    							->join('clothes_Specifications', 'clothes_Specifications.id', '=', 'clothes_orderinfo.speid')
+	    							->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_member_spe.pay', 'clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_orderinfo.num')
 	    							->first();
 	    		$picArr = explode(',', $data->pic);
 	    		$data->pic = $picArr[0];
@@ -182,16 +182,16 @@ class PayController extends Controller
 
     public function notify()
     {
-        $pay = Pay::wechat($this->config);
+        $pay = Pay::wechat(config('pay.wechat'));
 
         try{
-            $data = $pay->verify(); // 是的，验签就这么简单！
+            $data = $pay->verify(); //验签
 
             Log::debug('Wechat notify', $data->all());
         } catch (\Exception $e) {
             // $e->getMessage();
         }
         
-        return $pay->success()->send();// laravel 框架中请直接 `return $pay->success()`
+        return $pay->success();// laravel 框架中请直接 `return $pay->success()`
     }
 }
