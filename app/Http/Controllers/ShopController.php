@@ -30,7 +30,7 @@ class ShopController extends Controller
         $spe = MemberSpe::where('clothes_member_spe.shopid', $shop->id)
                             ->where('clothes_member_spe.member', $shop->member)
                             ->join('clothes_Specifications', 'clothes_Specifications.id', '=', 'clothes_member_spe.speid')
-                            ->select('clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_member_spe.pay', 'clothes_member_spe.id as member_spe_id', 'clothes_Specifications.id as spe_id')
+                            ->select('clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_member_spe.pay', 'clothes_member_spe.id as member_spe_id', 'clothes_Specifications.id as spe_id','clothes_member_spe.num')
                             // ->groupBy('clothes_specifications.colour')
                             ->get();
 
@@ -41,7 +41,7 @@ class ShopController extends Controller
                 $colour[] = $value->colour;
             }
             $speData[$value->colour]['colour'] = $value->colour;
-            $speData[$value->colour]['data'][] = ['size'=>$value->size, 'pay'=>$value->pay, 'spe_id' => $value->spe_id, 'member_spe_id' => $value->member_spe_id];
+            $speData[$value->colour]['data'][] = ['size'=>$value->size, 'pay'=>$value->pay, 'spe_id' => $value->spe_id, 'member_spe_id' => $value->member_spe_id, 'num'=>$value->num];
         }
         $speData = array_values($speData);
         $likeShop = MemberShop::where('clothes_shop.title', 'like', '%'.$shop->title.'%')
@@ -77,6 +77,6 @@ class ShopController extends Controller
             $relationShop = [];
         }
 
-        return json_encode(['title' => $shop->title, 'pic' => $picArr,'con' => $shop->con,'pay'=>$shop->pay,'sale'=>$shop->sale,'spe' => $speData, 'like' => $likeShop, 'relation'=>$relationShop]);
+        return json_encode(['shopid'=>$shop->shopid,'title' => $shop->title, 'pic' => $picArr,'con' => $shop->con,'pay'=>$shop->pay,'sale'=>$shop->sale,'spe' => $speData, 'like' => $likeShop, 'relation'=>$relationShop]);
     }
 }

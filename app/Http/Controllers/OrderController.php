@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Order;
 use App\OrderInfo;
+use App\OrderRefund;
+
+use Carbon\Carbon;
 
 class OrderController extends Controller
 {
@@ -13,7 +16,7 @@ class OrderController extends Controller
         $orders = Order::where('user', $request->user_id)
                         ->where('over', $request->over)
                         ->orderBy('id', 'asc')
-                        ->select('id', 'over')
+                        ->select('id', 'over','order_no')
                         ->skip($request->skip)
                         ->take(8)
                         ->get();
@@ -37,5 +40,58 @@ class OrderController extends Controller
             $order->total = $total;
         }
         return json_encode($orders);
+    }
+
+    public function refund(Request $request)
+    {
+        $order = Order::findOrFail($request->order_id);
+
+        $order->over = $request->over;
+        $order->save();
+        $refund = new OrderRefund;
+
+        $refund->order_id = $request->order_id;
+        $refund->member_id = $request->member_id;
+        $refund->pic = $request->pic;
+        $refund->content = $request->content;
+        $refund->date = now();
+
+        $data=$refund->save();
+
+        if ($data == 1){
+            return json_encode(['code' => '200', 'data' =>'申请成功']);
+        } else{
+            return json_encode(['code' => '400', 'data' =>'申请失败']);
+        }
+    }
+
+    public function receipt($id)
+    {
+        $order = Order::findOrFail($id);
+
+        $order->over = 3;
+        $data = $order->save();
+
+        if ($data == 1){
+            return json_encode(['code' => '200', 'data' =>'成功']);
+        } else{
+            return json_encode(['code' => '400', 'data' =>'失败']);
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        Order::where('user', $request->user)->where('member', $request->member)->where('over', 0)->delete();
+    }
+
+    public function orderDelete($id)
+    {
+        $data = Order::destroy($id);
+
+        if ($data == 1){
+            return json_encode(['code' => '200', 'data' =>'删除成功']);
+        } else{
+            return json_encode(['code' => '400', 'data' =>'删除失败']);
+        }
     }
 }

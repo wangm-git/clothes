@@ -50,7 +50,7 @@ return [
         'mch_id' => env('WECHAT_MCH_ID', '1551016051'),
 
         // 微信支付异步通知地址
-        'notify_url' => '',
+        'notify_url' => env('APP_URL').'/pay/notify',
 
         // 微信支付签名秘钥
         'key' => env('WECHAT_KEY', 'f4556ffb8b886dd0da8a92fe56eb7b8a'),

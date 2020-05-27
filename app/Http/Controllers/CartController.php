@@ -16,12 +16,20 @@ class CartController extends Controller
 {
     public function add(Request $request)
     {
+        $memberSpe = MemberSpe::findOrFail($request->member_spe_id);
+
         $oldCart = Cart::where('shop_id', $request->shop_id)->where('member_shop_id', $request->member_shop_id)->where('spe_id', $request->spe_id)->where('member_spe_id', $request->member_spe_id)->where('delete_at', 0)->first();
 
         if (!empty($oldCart)) {
-            $oldCart->num = $oldCart->num + $request->num;
+            $oldCart->num = $request->num + $oldCart->num;
+            if ($request->num + $oldCart->num> $memberSpe->num) {
+                return json_encode(['code'=>'400','data'=>'数量大于库存']);
+            }
             $data = $oldCart->save();
         } else {
+            if ($request->num> $memberSpe->num) {
+                return json_encode(['code'=>'400','data'=>'数量大于库存']);
+            }
             $cart = New Cart;
 
             $cart->member_id = $request->member_id;
@@ -45,7 +53,12 @@ class CartController extends Controller
 
     public function update(Request $request)
     {
-        $cart = Cart::find($request->id);
+        $cart = Cart::findOrFail($request->id);
+        $memberSpe = MemberSpe::findOrFail($cart->member_spe_id);
+
+        if ($request->num > $memberSpe->num) {
+            return json_encode(['code'=>'400','data'=>'数量大于库存']);
+        }
 
         $cart->num = $request->num;
         $data = $cart->save();
@@ -78,13 +91,19 @@ class CartController extends Controller
                     ->join('clothes_shop', 'clothes_shop.id', '=', 'clothes_cart.shop_id')
                     ->join('clothes_Specifications', 'clothes_Specifications.id', '=', 'clothes_cart.spe_id')
                     ->join('clothes_member_spe', 'clothes_member_spe.id', '=', 'clothes_cart.member_spe_id')
-                    ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_member_spe.pay', 'clothes_cart.num')
+                    ->select('clothes_shop.title', 'clothes_shop.pic', 'clothes_Specifications.colour', 'clothes_Specifications.size', 'clothes_member_spe.pay', 'clothes_cart.num','clothes_cart.over','clothes_cart.id', 'clothes_cart.member_spe_id')
                     ->get();
-
         $picArr = [];
         foreach ($cart as $key => &$value) {
             $picArr = explode(',', $value->pic);
             $value->pic = env('PIC_URL').$picArr[0];
+            $memberSpe = MemberSpe::findOrFail($value->member_spe_id);
+
+            if($value->num > $memberSpe->num){
+                $value->status = 1;
+            }else{
+                $value->status = 0;
+            }
         }
 
         return json_encode($cart);

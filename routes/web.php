@@ -27,6 +27,11 @@ Route::post('/address/delete/{id}','AddressController@delete');
 Route::post('/address/setDefault','AddressController@setDefault');
 
 Route::get('/order/list','OrderController@list');
+Route::post('/order/refund','OrderController@refund');
+Route::post('/order/receipt/{id}','OrderController@receipt');
+Route::post('/order/delete','OrderController@delete');
+Route::post('/order/orderDelete/{id}','OrderController@orderDelete');
+
 
 Route::get('/shop/show','ShopController@show');
 
@@ -39,3 +44,4 @@ Route::post('/pay/pay','PayController@pay');
 Route::post('/pay/placeOrder','PayController@placeOrder');
 Route::post('/pay/placeOrderFromCart','PayController@placeOrderFromCart');
 Route::get('/pay/show','PayController@show');
+Route::any('/pay/notify','PayController@notify');

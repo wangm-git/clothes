@@ -78,8 +78,12 @@ class AddressController extends Controller
     public function setDefault(Request $request)
     {
     	$isDefault = Address::where('member_id', $request->member_id)->where('is_default', 1)->first();
-    	$isDefault->is_default = 0;
-    	$isDefault->save();
+
+        if (!empty($isDefault)) {
+            $isDefault->is_default = 0;
+            $isDefault->save();  
+        }
+    	
 
     	$address = Address::where('id', $request->id)->first();
     	$address->is_default = 1;
