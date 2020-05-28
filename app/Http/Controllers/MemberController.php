@@ -58,7 +58,7 @@ class MemberController extends Controller
             $hotData[$key]['m_shopid'] = $shop->m_shopid;
         }
 
-        return json_encode(['code'=>'200', 'data'=>['shopname' => $member->title, 'shopabout' => $member->about, 'shop' => $shopData, 'hot'=> $hotData]]);
+        return json_encode(['code'=>'200', 'data'=>['shopname' => $member->title, 'shopabout' => $member->about, 'Templateid' => $member->Templateid, 'shop' => $shopData, 'hot'=> $hotData]]);
     }
 
     public function getTypeInfo(Request $request)

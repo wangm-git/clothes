@@ -61,7 +61,7 @@ class PayController extends Controller
             $orderInfo->save();
 
             DB::commit();
-            return json_encode(['code' => '200', 'order_no' =>$code]);
+            return json_encode(['code' => '200', 'order_no'=>$code]);
         } catch (Exception $e) {
             DB::rollBack();
             return json_encode(['code' => '400', 'data' =>'下单失败']);
@@ -182,7 +182,8 @@ class PayController extends Controller
         $wechat = [
             'out_trade_no' => $request->order_no,
             'body' => $order->title,
-            'total_fee' => $order->pay * 100,
+            // 'total_fee' => $order->pay * 100,
+            'total_fee' => 1,
             'openid' => $request->open_id,
         ];
 
@@ -203,6 +204,22 @@ class PayController extends Controller
 
         try{
             $data = $pay->verify(); //验签
+
+            Log::debug('Wechat notify', $data->return_code);
+            Log::debug('Wechat notify', $data->result_code);
+            if ($data->return_code == 'SUCCESS') {
+                $order = Order::where('order_no', $order->order_no)->with('orderInfo')->first();
+                Log::debug('order', $order);
+                $order->over = 1;
+                $order->over_date = now();
+                $order->transaction_id = $data->transaction_id;
+                $order->save();
+
+                foreach ($order->orderinfo as $key => $orderInfo) {
+                    MemberShop::where('id',$orderInfo->mshopid)->increment('sale', $orderInfo->num);
+                    MemberSpe::where('id', $orderInfo->mspeid)->decrement('num', $orderInfo->num);
+                }
+            }
             
             Log::debug('Wechat notify', $data->all());
         } catch (\Exception $e) {
